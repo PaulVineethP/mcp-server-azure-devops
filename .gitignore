@@ -39,3 +39,5 @@ diffs/
 # Agent harness artifacts
 .codex/
 .agents/
+dist/
+*.tgz

@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/) and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.2.1] - 2026-06-10
+
+### Changed
+
+- Published to npm as `mcp-server-azure-devops-onprem`; run with `npx -y mcp-server-azure-devops-onprem` (no clone needed).
+- Cross-platform packaging (`prepack`/`prepublishOnly` build without Unix-only `chmod`); `bin` resolves by the published package name.
+
 ## [1.2.0] - 2026-06-10
 
 ### Changed

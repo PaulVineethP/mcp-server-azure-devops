@@ -47,9 +47,15 @@ The server uses a feature-based architecture where each feature area (like work-
   - Azure Identity credentials, or
   - Azure CLI login
 
-### Running locally (from source)
+### Running from npm (npx)
 
-This server is run directly from a local build (it is not published to a public npm registry):
+The server is published to npm, so you can run it without cloning this repository:
+
+```bash
+npx -y mcp-server-azure-devops-onprem
+```
+
+### Running locally (from source)
 
 ```bash
 npm ci
@@ -116,9 +122,10 @@ Be sure you are logged in to Azure CLI with `az login` then add the following:
 {
   "mcpServers": {
     "azureDevOps": {
-      "command": "node",
-      "args": ["/absolute/path/to/mcp-server-azure-devops/dist/index.js"],
+      "command": "npx",
+      "args": ["-y", "mcp-server-azure-devops-onprem"],
       "env": {
+        "MCP_TRANSPORT": "stdio",
         "AZURE_DEVOPS_ORG_URL": "https://dev.azure.com/your-organization",
         "AZURE_DEVOPS_AUTH_METHOD": "azure-identity",
         "AZURE_DEVOPS_DEFAULT_PROJECT": "your-project-name"
@@ -134,9 +141,10 @@ Be sure you are logged in to Azure CLI with `az login` then add the following:
 {
   "mcpServers": {
     "azureDevOps": {
-      "command": "node",
-      "args": ["/absolute/path/to/mcp-server-azure-devops/dist/index.js"],
+      "command": "npx",
+      "args": ["-y", "mcp-server-azure-devops-onprem"],
       "env": {
+        "MCP_TRANSPORT": "stdio",
         "AZURE_DEVOPS_ORG_URL": "https://dev.azure.com/your-organization",
         "AZURE_DEVOPS_AUTH_METHOD": "pat",
         "AZURE_DEVOPS_PAT": "<YOUR_PAT>",
@@ -153,9 +161,10 @@ Azure DevOps Server (on-prem) requires PAT authentication. Example:
 {
   "mcpServers": {
     "azureDevOps": {
-      "command": "node",
-      "args": ["/absolute/path/to/mcp-server-azure-devops/dist/index.js"],
+      "command": "npx",
+      "args": ["-y", "mcp-server-azure-devops-onprem"],
       "env": {
+        "MCP_TRANSPORT": "stdio",
         "AZURE_DEVOPS_ORG_URL": "https://server:8080/tfs/DefaultCollection",
         "AZURE_DEVOPS_AUTH_METHOD": "pat",
         "AZURE_DEVOPS_PAT": "<YOUR_PAT>",

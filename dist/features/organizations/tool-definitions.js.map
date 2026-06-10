@@ -1,1 +1,0 @@
-{"version":3,"file":"tool-definitions.js","sourceRoot":"","sources":["../../../src/features/organizations/tool-definitions.ts"],"names":[],"mappings":";;;AAAA,2DAAqD;AAErD,uCAAoD;AAEpD;;GAEG;AACU,QAAA,kBAAkB,GAAqB;IAClD;QACE,IAAI,EAAE,oBAAoB;QAC1B,WAAW,EACT,8EAA8E;QAChF,WAAW,EAAE,IAAA,oCAAe,EAAC,iCAAuB,CAAC;KACtD;CACF,CAAC"}
