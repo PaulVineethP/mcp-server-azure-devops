@@ -1,0 +1,92 @@
+name: Publish
+
+# Publishes to npm and creates a GitHub Release whenever the version in
+# package.json increases on main. Normal commits that don't change the version
+# are ignored, so you control releases simply by bumping the version field.
+#
+# Requirements:
+#   - Repository secret NPM_TOKEN: an npm "Automation" token, or a granular
+#     access token with "bypass 2FA" enabled (required because the account has
+#     2FA enforced for writes). Create at https://www.npmjs.com/settings/<user>/tokens
+#
+# Manual runs (workflow_dispatch) are also supported.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "package.json"
+  workflow_dispatch:
+
+permissions:
+  contents: write # needed to create tags and GitHub Releases
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use latest Node LTS
+        uses: actions/setup-node@v4
+        with:
+          node-version: "lts/*"
+          cache: "npm"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+      - name: Run unit tests
+        run: npm run test:unit
+
+      - name: Read package version
+        id: pkg
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          NAME="$(node -p "require('./package.json').name")"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Check if version already published
+        id: check
+        run: |
+          NAME="${{ steps.pkg.outputs.name }}"
+          VERSION="${{ steps.pkg.outputs.version }}"
+          if npm view "$NAME@$VERSION" version >/dev/null 2>&1; then
+            echo "already=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::$NAME@$VERSION is already published — skipping."
+          else
+            echo "already=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::$NAME@$VERSION is not published — publishing."
+          fi
+
+      - name: Publish to npm
+        if: steps.check.outputs.already == 'false'
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create git tag and GitHub Release
+        if: steps.check.outputs.already == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ steps.pkg.outputs.tag }}"
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "::notice::Tag $TAG already exists — skipping release."
+          else
+            git tag "$TAG"
+            git push origin "$TAG"
+            gh release create "$TAG" \
+              --title "$TAG" \
+              --generate-notes
+          fi
