@@ -80,7 +80,7 @@
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
     "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
-    "prepare": "husky install",
+    "prepare": "husky install || true",
     "commit": "cz"
   },
   "keywords": [
