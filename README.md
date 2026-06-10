@@ -70,8 +70,8 @@ The server supports two transports, selected with the `MCP_TRANSPORT` environmen
 
 | `MCP_TRANSPORT` | Description | Endpoints |
 | --------------- | ----------- | --------- |
-| `stdio` (default) | Classic stdio; one client per process. | n/a |
-| `http` | HTTP server exposing both modern and legacy transports. | `POST /mcp` (Streamable HTTP), `GET /sse` + `POST /messages` (legacy SSE), `GET /health` |
+| `http` (default) | HTTP server exposing both modern and legacy transports. | `POST /mcp` (Streamable HTTP), `GET /sse` + `POST /messages` (legacy SSE), `GET /health` |
+| `stdio` | Classic stdio; one client per process. | n/a |
 
 HTTP options (used only when `MCP_TRANSPORT=http`):
 
@@ -81,10 +81,12 @@ HTTP options (used only when `MCP_TRANSPORT=http`):
 | `MCP_HTTP_PORT` | `3000` | Listening port. |
 | `MCP_HTTP_ALLOWED_HOSTS` | _(localhost only)_ | Extra `Host` header values allowed by DNS-rebinding protection (comma-separated), for non-localhost deployments. |
 
-Start it in HTTP mode:
+Start it (HTTP is the default transport):
 
 ```bash
-MCP_TRANSPORT=http MCP_HTTP_PORT=3000 npm start
+npm start                          # HTTP on http://127.0.0.1:3000
+MCP_HTTP_PORT=8080 npm start       # custom port
+MCP_TRANSPORT=stdio npm start      # classic stdio instead
 ```
 
 Then point an HTTP-capable MCP client at `http://127.0.0.1:3000/mcp` (Streamable HTTP) or `http://127.0.0.1:3000/sse` (legacy SSE). Example VS Code `mcp.json` entry using Streamable HTTP:

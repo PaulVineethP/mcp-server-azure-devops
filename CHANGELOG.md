@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/) and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.2.0] - 2026-06-10
+
+### Changed
+
+- **HTTP is now the default transport.** Running the server with no `MCP_TRANSPORT` set starts the HTTP server (Streamable HTTP at `POST /mcp`, legacy SSE at `GET /sse` + `POST /messages`, health at `GET /health`). Set `MCP_TRANSPORT=stdio` to use the classic stdio transport.
+
 ## [1.1.0] - 2026-06-10
 
 ### Features

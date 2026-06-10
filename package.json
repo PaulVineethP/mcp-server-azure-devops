@@ -1,6 +1,6 @@
 {
   "name": "mcp-server-azure-devops-onprem",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Azure DevOps / on-prem TFS server for the Model Context Protocol (MCP)",
   "repository": {
     "type": "git",

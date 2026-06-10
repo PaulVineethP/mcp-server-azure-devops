@@ -73,14 +73,20 @@ function getConfig(): AzureDevOpsConfig {
 async function main() {
   try {
     const config = getConfig();
-    const transportType = (process.env.MCP_TRANSPORT || 'stdio').toLowerCase();
+    // HTTP is the default/priority transport. Set MCP_TRANSPORT=stdio to use
+    // the classic stdio transport instead. (Legacy SSE is served within HTTP
+    // mode at GET /sse.)
+    const transportType = (process.env.MCP_TRANSPORT || 'http').toLowerCase();
 
-    if (
-      transportType === 'http' ||
-      transportType === 'sse' ||
-      transportType === 'streamable-http'
-    ) {
-      // HTTP transport (Streamable HTTP + legacy SSE).
+    if (transportType === 'stdio') {
+      // Classic stdio transport (one client per process).
+      const server = createAzureDevOpsServer(config);
+      const transport = new StdioServerTransport();
+      await server.connect(transport);
+
+      process.stderr.write('Azure DevOps MCP Server running on stdio\n');
+    } else {
+      // Default: HTTP transport (Streamable HTTP + legacy SSE).
       const host = process.env.MCP_HTTP_HOST || '127.0.0.1';
       const port = parseInt(process.env.MCP_HTTP_PORT || '3000', 10);
       const allowedHosts = (process.env.MCP_HTTP_ALLOWED_HOSTS || '')
@@ -94,13 +100,6 @@ async function main() {
         allowedHosts,
         createServer: () => createAzureDevOpsServer(config),
       });
-    } else {
-      // Default: stdio transport.
-      const server = createAzureDevOpsServer(config);
-      const transport = new StdioServerTransport();
-      await server.connect(transport);
-
-      process.stderr.write('Azure DevOps MCP Server running on stdio\n');
     }
   } catch (error) {
     process.stderr.write(`Error starting server: ${error}\n`);
