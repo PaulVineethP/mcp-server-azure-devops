@@ -5,6 +5,7 @@
 
 import { createAzureDevOpsServer } from './server';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { startHttpServer } from './shared/http/http-server';
 import dotenv from 'dotenv';
 import { AzureDevOpsConfig } from './shared/types';
 import { AuthenticationMethod } from './shared/auth/auth-factory';
@@ -71,14 +72,36 @@ function getConfig(): AzureDevOpsConfig {
 
 async function main() {
   try {
-    // Create the server with configuration
-    const server = createAzureDevOpsServer(getConfig());
+    const config = getConfig();
+    const transportType = (process.env.MCP_TRANSPORT || 'stdio').toLowerCase();
 
-    // Connect to stdio transport
-    const transport = new StdioServerTransport();
-    await server.connect(transport);
+    if (
+      transportType === 'http' ||
+      transportType === 'sse' ||
+      transportType === 'streamable-http'
+    ) {
+      // HTTP transport (Streamable HTTP + legacy SSE).
+      const host = process.env.MCP_HTTP_HOST || '127.0.0.1';
+      const port = parseInt(process.env.MCP_HTTP_PORT || '3000', 10);
+      const allowedHosts = (process.env.MCP_HTTP_ALLOWED_HOSTS || '')
+        .split(',')
+        .map((h) => h.trim())
+        .filter(Boolean);
 
-    process.stderr.write('Azure DevOps MCP Server running on stdio\n');
+      await startHttpServer({
+        host,
+        port,
+        allowedHosts,
+        createServer: () => createAzureDevOpsServer(config),
+      });
+    } else {
+      // Default: stdio transport.
+      const server = createAzureDevOpsServer(config);
+      const transport = new StdioServerTransport();
+      await server.connect(transport);
+
+      process.stderr.write('Azure DevOps MCP Server running on stdio\n');
+    }
   } catch (error) {
     process.stderr.write(`Error starting server: ${error}\n`);
     process.exit(1);

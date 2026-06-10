@@ -64,6 +64,44 @@ For iterative development (auto-reload):
 npm run dev            # runs src/index.ts via ts-node-dev
 ```
 
+### Transports (stdio vs HTTP/SSE)
+
+The server supports two transports, selected with the `MCP_TRANSPORT` environment variable. This only affects how the **MCP client connects to the server** — Azure DevOps authentication (PAT / Azure Identity / Azure CLI) is unchanged.
+
+| `MCP_TRANSPORT` | Description | Endpoints |
+| --------------- | ----------- | --------- |
+| `stdio` (default) | Classic stdio; one client per process. | n/a |
+| `http` | HTTP server exposing both modern and legacy transports. | `POST /mcp` (Streamable HTTP), `GET /sse` + `POST /messages` (legacy SSE), `GET /health` |
+
+HTTP options (used only when `MCP_TRANSPORT=http`):
+
+| Variable | Default | Description |
+| -------- | ------- | ----------- |
+| `MCP_HTTP_HOST` | `127.0.0.1` | Interface to bind to. Keep on localhost unless fronted by auth + TLS — the process holds Azure DevOps credentials. |
+| `MCP_HTTP_PORT` | `3000` | Listening port. |
+| `MCP_HTTP_ALLOWED_HOSTS` | _(localhost only)_ | Extra `Host` header values allowed by DNS-rebinding protection (comma-separated), for non-localhost deployments. |
+
+Start it in HTTP mode:
+
+```bash
+MCP_TRANSPORT=http MCP_HTTP_PORT=3000 npm start
+```
+
+Then point an HTTP-capable MCP client at `http://127.0.0.1:3000/mcp` (Streamable HTTP) or `http://127.0.0.1:3000/sse` (legacy SSE). Example VS Code `mcp.json` entry using Streamable HTTP:
+
+```json
+{
+  "servers": {
+    "azureDevOps": {
+      "type": "http",
+      "url": "http://127.0.0.1:3000/mcp"
+    }
+  }
+}
+```
+
+> Security: the HTTP listener binds to `127.0.0.1` by default and enables DNS-rebinding protection. Exposing it on other interfaces makes your Azure DevOps PAT reachable by anyone who can reach the port — only do so behind authentication and TLS.
+
 ### Usage with Claude Desktop/Cursor AI
 
 To integrate with Claude Desktop or Cursor AI, add one of the following configurations to your configuration file.

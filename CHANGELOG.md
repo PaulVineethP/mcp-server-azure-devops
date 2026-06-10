@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/) and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.1.0] - 2026-06-10
+
+### Features
+
+- HTTP transport selectable via `MCP_TRANSPORT=http`, exposing both modern Streamable HTTP (`POST /mcp`) and legacy SSE (`GET /sse` + `POST /messages`), plus a `GET /health` endpoint. The stdio transport remains the default.
+- HTTP listener binds to `127.0.0.1` by default with DNS-rebinding protection; configurable via `MCP_HTTP_HOST`, `MCP_HTTP_PORT`, and `MCP_HTTP_ALLOWED_HOSTS`.
+
 ## [1.0.0] - 2026-06-10
 
 Initial release.
