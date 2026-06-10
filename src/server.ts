@@ -17,6 +17,7 @@ import {
 } from './shared/errors';
 import { handleResponseError } from './shared/errors/handle-request-error';
 import { AuthenticationMethod, AzureDevOpsClient } from './shared/auth';
+import { annotateTools } from './shared/tool-annotations';
 // Import environment defaults when needed in feature handlers
 
 // Import feature modules with request handlers and tool definitions
@@ -123,7 +124,9 @@ export function createAzureDevOpsServer(config: AzureDevOpsConfig): Server {
       ...wikisTools,
     ];
 
-    return { tools };
+    // Attach read-only / write annotations so clients can auto-approve
+    // read-only tools without prompting on every call.
+    return { tools: annotateTools(tools) };
   });
 
   // Register the resource handlers
@@ -248,9 +251,8 @@ export function createAzureDevOpsServer(config: AzureDevOpsConfig): Server {
         versionType && version ? { versionType, version } : undefined;
 
       // Import the getFileContent function from repositories feature
-      const { getFileContent } = await import(
-        './features/repositories/get-file-content/index.js'
-      );
+      const { getFileContent } =
+        await import('./features/repositories/get-file-content/index.js');
 
       const fileContent = await getFileContent(
         connection,

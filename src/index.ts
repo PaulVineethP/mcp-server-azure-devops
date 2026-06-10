@@ -6,6 +6,8 @@
 import { createAzureDevOpsServer } from './server';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { startHttpServer } from './shared/http/http-server';
+import { checkForUpdates } from './shared/version-check';
+import { runInstall } from './install';
 import dotenv from 'dotenv';
 import { AzureDevOpsConfig } from './shared/types';
 import { AuthenticationMethod } from './shared/auth/auth-factory';
@@ -72,7 +74,20 @@ function getConfig(): AzureDevOpsConfig {
 
 async function main() {
   try {
+    // `install` / `setup` subcommand: write the MCP client config and exit
+    // without starting the server.
+    const cliCommand = process.argv[2];
+    if (cliCommand === 'install' || cliCommand === 'setup') {
+      runInstall(process.argv.slice(3));
+      return;
+    }
+
     const config = getConfig();
+
+    // Check npm for a newer version (and optionally self-update) in the
+    // background. Never blocks startup and never throws.
+    void checkForUpdates();
+
     // HTTP is the default/priority transport. Set MCP_TRANSPORT=stdio to use
     // the classic stdio transport instead. (Legacy SSE is served within HTTP
     // mode at GET /sse.)

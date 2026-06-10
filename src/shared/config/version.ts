@@ -1,4 +1,4 @@
 /**
  * Current version of the Azure DevOps MCP server
  */
-export const VERSION = '1.2.1';
+export const VERSION = '1.3.0';

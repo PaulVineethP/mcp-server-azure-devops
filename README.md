@@ -110,6 +110,82 @@ Then point an HTTP-capable MCP client at `http://127.0.0.1:3000/mcp` (Streamable
 
 > Security: the HTTP listener binds to `127.0.0.1` by default and enables DNS-rebinding protection. Exposing it on other interfaces makes your Azure DevOps PAT reachable by anyone who can reach the port — only do so behind authentication and TLS.
 
+### Quick install (writes `mcp.json` for you)
+
+Instead of editing `mcp.json` by hand, let the package register itself. This adds an `azureDevOps` server entry **and** a secure `inputs` prompt for your PAT:
+
+```bash
+# VS Code user config (default location for your OS)
+npx -y mcp-server-azure-devops-onprem install
+
+# or write into the current workspace (.vscode/mcp.json)
+npx -y mcp-server-azure-devops-onprem install --workspace
+
+# pre-fill org URL and default project
+npx -y mcp-server-azure-devops-onprem install --org-url https://dev.azure.com/your-org --project your-project
+```
+
+Options:
+
+| Flag | Description |
+| ---- | ----------- |
+| `--path <file>` | Explicit path to the `mcp.json` to update. |
+| `--workspace` | Write to `./.vscode/mcp.json` in the current directory. |
+| `--server-name <id>` | Server key to use (default `azureDevOps`). |
+| `--org-url <url>` | Pre-fill `AZURE_DEVOPS_ORG_URL`. |
+| `--project <name>` | Pre-fill `AZURE_DEVOPS_DEFAULT_PROJECT`. |
+
+The command is non-destructive: an existing config is backed up to `<mcp.json>.bak` before it is updated, and the PAT input is only added if it is not already present. After running it, fill in `AZURE_DEVOPS_ORG_URL` and restart your MCP client. The resulting entry looks like:
+
+```json
+{
+  "servers": {
+    "azureDevOps": {
+      "command": "npx",
+      "args": ["-y", "mcp-server-azure-devops-onprem"],
+      "env": {
+        "MCP_TRANSPORT": "stdio",
+        "AZURE_DEVOPS_ORG_URL": "",
+        "AZURE_DEVOPS_AUTH_METHOD": "pat",
+        "AZURE_DEVOPS_PAT": "${input:ado_pat}",
+        "AZURE_DEVOPS_DEFAULT_PROJECT": "",
+        "NODE_TLS_REJECT_UNAUTHORIZED": "0"
+      },
+      "type": "stdio"
+    }
+  },
+  "inputs": [
+    {
+      "id": "ado_pat",
+      "type": "promptString",
+      "description": "Azure DevOps Personal Access Token",
+      "password": true
+    }
+  ]
+}
+```
+
+> `NODE_TLS_REJECT_UNAUTHORIZED: "0"` disables TLS certificate validation — useful for on-prem Azure DevOps Server with self-signed certs, but remove it for cloud/production to keep certificate verification on.
+
+### Tool approvals (auto-approve read-only tools)
+
+Every tool advertises an MCP `readOnlyHint` annotation. Read-only tools (everything that only fetches data — `list_*`, `get_*`, `search_*`, `pipeline_timeline`, `download_pipeline_artifact`) are marked `readOnlyHint: true`, so MCP clients such as VS Code can auto-approve them without prompting on every call.
+
+Mutating tools (`create_*`, `update_*`, `trigger_pipeline`, `manage_work_item_link`, `add_pull_request_comment`) are marked `readOnlyHint: false` and continue to require explicit approval.
+
+In VS Code you can confirm/adjust this per tool from the tool's approval menu; the read-only annotation makes those tools eligible to "Always allow" safely.
+
+### Automatic updates
+
+On startup the server checks the npm registry for a newer published version. If one exists it logs a notice and, by default, starts a best-effort background self-update (`npm install -g mcp-server-azure-devops-onprem@latest`) that takes effect on the next launch. When launched via `npx -y …`, npx also fetches the latest version on each run. Control this with:
+
+| Variable | Default | Description |
+| -------- | ------- | ----------- |
+| `AZURE_DEVOPS_MCP_AUTO_UPDATE` | `true` | Set to `false` to check and notify only (no background update). |
+| `AZURE_DEVOPS_MCP_DISABLE_UPDATE_CHECK` | `false` | Set to `true` to skip the update check entirely (e.g. offline/air-gapped). |
+
+The update check never blocks startup and silently ignores network/registry errors.
+
 ### Usage with Claude Desktop/Cursor AI
 
 To integrate with Claude Desktop or Cursor AI, add one of the following configurations to your configuration file.
@@ -207,6 +283,8 @@ Key environment variables include:
 | `AZURE_TENANT_ID`              | Azure AD tenant ID (for service principals)                                        | Only with service principals | -                |
 | `AZURE_CLIENT_ID`              | Azure AD application ID (for service principals)                                   | Only with service principals | -                |
 | `AZURE_CLIENT_SECRET`          | Azure AD client secret (for service principals)                                    | Only with service principals | -                |
+| `AZURE_DEVOPS_MCP_AUTO_UPDATE` | Background self-update when a newer version is published (`true`/`false`)           | No                           | `true`           |
+| `AZURE_DEVOPS_MCP_DISABLE_UPDATE_CHECK` | Skip the npm version check entirely (`true`/`false`)                      | No                           | `false`          |
 | `LOG_LEVEL`                    | Logging level (debug, info, warn, error)                                           | No                           | info             |
 
 ## Troubleshooting Authentication
