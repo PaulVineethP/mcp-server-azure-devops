@@ -163,6 +163,49 @@ function stripJsonComments(text: string): string {
   return result;
 }
 
+/**
+ * Remove trailing commas (e.g. before `}` or `]`) so JSONC text written by
+ * editors like VS Code can be parsed as standard JSON. Commas inside strings
+ * are preserved.
+ */
+function stripTrailingCommas(text: string): string {
+  let result = '';
+  let inString = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+
+    if (inString) {
+      result += char;
+      if (char === '\\') {
+        result += text[++i] ?? '';
+      } else if (char === '"') {
+        inString = false;
+      }
+      continue;
+    }
+    if (char === '"') {
+      inString = true;
+      result += char;
+      continue;
+    }
+    if (char === ',') {
+      // Look ahead past whitespace for a closing bracket/brace.
+      let j = i + 1;
+      while (j < text.length && /\s/.test(text[j])) {
+        j++;
+      }
+      if (text[j] === '}' || text[j] === ']') {
+        // Skip the trailing comma.
+        continue;
+      }
+    }
+    result += char;
+  }
+
+  return result;
+}
+
 function buildServerEntry(options: InstallOptions): Record<string, unknown> {
   return {
     command: 'npx',
@@ -209,7 +252,9 @@ export function runInstall(args: string[]): string {
       config = JSON.parse(raw || '{}');
     } catch {
       try {
-        config = JSON.parse(stripJsonComments(raw) || '{}');
+        config = JSON.parse(
+          stripTrailingCommas(stripJsonComments(raw)) || '{}',
+        );
       } catch {
         log(
           `ERROR: Could not parse existing ${targetPath}. Please add the server entry manually, or pass --path to a clean file.`,
