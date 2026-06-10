@@ -2,6 +2,14 @@
 
 All notable changes to this project are documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/) and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.3.0](https://github.com/PaulVineethP/mcp-server-azure-devops/compare/mcp-server-azure-devops-v1.2.0...mcp-server-azure-devops-v1.3.0) (2026-06-10)
+
+
+### Features
+
+* add HTTP transport (Streamable HTTP + legacy SSE) ([a95e169](https://github.com/PaulVineethP/mcp-server-azure-devops/commit/a95e1696d52db03ccedc4366d31600f55a3794bc))
+* make HTTP the default transport (stdio via MCP_TRANSPORT=stdio) ([cd29227](https://github.com/PaulVineethP/mcp-server-azure-devops/commit/cd29227a94cf0d535a3e724930d944ab31286d48))
+
 ## [1.2.0] - 2026-06-10
 
 ### Changed
