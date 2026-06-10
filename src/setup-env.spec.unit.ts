@@ -9,7 +9,21 @@ import { tmpdir } from 'os';
 import { join } from 'path';
 import { spawnSync } from 'child_process';
 
-describe('setup_env.sh', () => {
+// setup_env.sh is a Bash script intended for Unix/CI environments. Skip these
+// tests when a working `bash` is not available (e.g. on Windows where `bash`
+// may resolve to a non-functional WSL relay).
+function isBashAvailable(): boolean {
+  try {
+    const probe = spawnSync('bash', ['-c', 'exit 0'], { encoding: 'utf8' });
+    return probe.status === 0;
+  } catch {
+    return false;
+  }
+}
+
+const describeBash = isBashAvailable() ? describe : describe.skip;
+
+describeBash('setup_env.sh', () => {
   it('writes PAT and auth method in non-interactive mode', () => {
     const tempDir = mkdtempSync(join(tmpdir(), 'setup-env-'));
     const scriptPath = join(process.cwd(), 'setup_env.sh');
