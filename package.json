@@ -4,7 +4,7 @@
   "description": "Azure DevOps / on-prem TFS server for the Model Context Protocol (MCP)",
   "repository": {
     "type": "git",
-    "url": "https://github.com/PaulVineethP/mcp-server-azure-devops"
+    "url": "https://github.com/allscriptshealthcare/mcp-server-azure-devops-onprem"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

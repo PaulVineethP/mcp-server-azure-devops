@@ -47,7 +47,7 @@
       <Step order="1">Create a pull request and update the issue status to "In Review" in the GitHub project board, ensuring it remains assigned to 'PaulVineethP'.</Step>
       <STOPPING_POINT order="2">Present your work for review</STOPPING_POINT>
       <Step order="3">Address any feedback, and present for re-review; Continue in this manner until approved</Step>
-      <Step order="4">When the task is approved, run ./finish_task.sh "PR Title" "PR Description" to commit, push, and update the PR for the repository at https://github.com/PaulVineethP/mcp-server-azure-devops</Step>
+      <Step order="4">When the task is approved, run ./finish_task.sh "PR Title" "PR Description" to commit, push, and update the PR for the repository at https://github.com/allscriptshealthcare/mcp-server-azure-devops-onprem</Step>
       <Step order="5">After the PR is merged, update the issue status to "Done" and close the GitHub issue with an appropriate comment summarizing the work done. Use the GitHub CLI (gh) to close issues.</Step>
       <Step order="6">Wait for feedback before starting a new task</Step>
     </Phase>
