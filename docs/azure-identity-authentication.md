@@ -63,7 +63,7 @@ Add the following to your configuration file:
   "mcpServers": {
     "azureDevOps": {
       "command": "npx",
-      "args": ["-y", "mcp-server-azure-devops-onprem"],
+      "args": ["-y", "@altera/mcp-server-azure-devops-onprem"],
       "env": {
         "AZURE_DEVOPS_ORG_URL": "https://dev.azure.com/your-organization",
         "AZURE_DEVOPS_AUTH_METHOD": "azure-identity",

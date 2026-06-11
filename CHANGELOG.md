@@ -6,7 +6,7 @@ All notable changes to this project are documented in this file. The format is b
 
 ### Changed
 
-- Published to npm as `mcp-server-azure-devops-onprem`; run with `npx -y mcp-server-azure-devops-onprem` (no clone needed).
+- Published to npm as `@altera/mcp-server-azure-devops-onprem`; run with `npx -y @altera/mcp-server-azure-devops-onprem` (no clone needed).
 - Cross-platform packaging (`prepack`/`prepublishOnly` build without Unix-only `chmod`); `bin` resolves by the published package name.
 
 ## [1.2.0] - 2026-06-10

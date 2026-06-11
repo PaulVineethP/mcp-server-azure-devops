@@ -52,7 +52,7 @@ The server uses a feature-based architecture where each feature area (like work-
 The server is published to npm, so you can run it without cloning this repository:
 
 ```bash
-npx -y mcp-server-azure-devops-onprem
+npx -y @altera/mcp-server-azure-devops-onprem
 ```
 
 ### Running locally (from source)
@@ -116,13 +116,13 @@ Instead of editing `mcp.json` by hand, let the package register itself. This add
 
 ```bash
 # VS Code user config (default location for your OS)
-npx -y mcp-server-azure-devops-onprem install
+npx -y @altera/mcp-server-azure-devops-onprem install
 
 # or write into the current workspace (.vscode/mcp.json)
-npx -y mcp-server-azure-devops-onprem install --workspace
+npx -y @altera/mcp-server-azure-devops-onprem install --workspace
 
 # pre-fill org URL and default project
-npx -y mcp-server-azure-devops-onprem install --org-url https://dev.azure.com/your-org --project your-project
+npx -y @altera/mcp-server-azure-devops-onprem install --org-url https://dev.azure.com/your-org --project your-project
 ```
 
 Options:
@@ -142,7 +142,7 @@ The command is non-destructive: an existing config is backed up to `<mcp.json>.b
   "servers": {
     "azureDevOps": {
       "command": "npx",
-      "args": ["-y", "mcp-server-azure-devops-onprem"],
+      "args": ["-y", "@altera/mcp-server-azure-devops-onprem"],
       "env": {
         "MCP_TRANSPORT": "stdio",
         "AZURE_DEVOPS_ORG_URL": "",
@@ -177,7 +177,7 @@ In VS Code you can confirm/adjust this per tool from the tool's approval menu; t
 
 ### Automatic updates
 
-On startup the server checks the npm registry for a newer published version. If one exists it logs a notice and, by default, starts a best-effort background self-update (`npm install -g mcp-server-azure-devops-onprem@latest`) that takes effect on the next launch. When launched via `npx -y …`, npx also fetches the latest version on each run. Control this with:
+On startup the server checks the npm registry for a newer published version. If one exists it logs a notice and, by default, starts a best-effort background self-update (`npm install -g @altera/mcp-server-azure-devops-onprem@latest`) that takes effect on the next launch. When launched via `npx -y …`, npx also fetches the latest version on each run. Control this with:
 
 | Variable | Default | Description |
 | -------- | ------- | ----------- |
@@ -199,7 +199,7 @@ Be sure you are logged in to Azure CLI with `az login` then add the following:
   "mcpServers": {
     "azureDevOps": {
       "command": "npx",
-      "args": ["-y", "mcp-server-azure-devops-onprem"],
+      "args": ["-y", "@altera/mcp-server-azure-devops-onprem"],
       "env": {
         "MCP_TRANSPORT": "stdio",
         "AZURE_DEVOPS_ORG_URL": "https://dev.azure.com/your-organization",
@@ -218,7 +218,7 @@ Be sure you are logged in to Azure CLI with `az login` then add the following:
   "mcpServers": {
     "azureDevOps": {
       "command": "npx",
-      "args": ["-y", "mcp-server-azure-devops-onprem"],
+      "args": ["-y", "@altera/mcp-server-azure-devops-onprem"],
       "env": {
         "MCP_TRANSPORT": "stdio",
         "AZURE_DEVOPS_ORG_URL": "https://dev.azure.com/your-organization",
@@ -238,7 +238,7 @@ Azure DevOps Server (on-prem) requires PAT authentication. Example:
   "mcpServers": {
     "azureDevOps": {
       "command": "npx",
-      "args": ["-y", "mcp-server-azure-devops-onprem"],
+      "args": ["-y", "@altera/mcp-server-azure-devops-onprem"],
       "env": {
         "MCP_TRANSPORT": "stdio",
         "AZURE_DEVOPS_ORG_URL": "https://server:8080/tfs/DefaultCollection",

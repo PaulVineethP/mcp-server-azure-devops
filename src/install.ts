@@ -4,7 +4,7 @@
  * including the `inputs` prompt used to securely collect the PAT.
  *
  * Usage:
- *   npx -y mcp-server-azure-devops-onprem install [options]
+ *   npx -y @altera/mcp-server-azure-devops-onprem install [options]
  *
  * Options:
  *   --path <file>        Explicit path to the mcp.json to update.

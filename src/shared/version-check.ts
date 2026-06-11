@@ -5,9 +5,13 @@ import { VERSION } from './config';
 /**
  * The published npm package name. Used for update checks and self-update.
  */
-export const PACKAGE_NAME = 'mcp-server-azure-devops-onprem';
+export const PACKAGE_NAME = '@altera/mcp-server-azure-devops-onprem';
 
-const REGISTRY_LATEST_URL = `https://registry.npmjs.org/${PACKAGE_NAME}/latest`;
+// Scoped package names must be URL-encoded (the "/" becomes "%2F") when
+// addressing the npm registry directly.
+const REGISTRY_LATEST_URL = `https://registry.npmjs.org/${encodeURIComponent(
+  PACKAGE_NAME,
+)}/latest`;
 
 function safeLog(message: string): void {
   process.stderr.write(`${message}\n`);
