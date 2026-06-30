@@ -2,11 +2,18 @@
 
 All notable changes to this project are documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/) and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.3.2] - 2026-06-30
+
+### Fixed
+
+- `install` command now writes VS Code `inputs` prompts for the organization URL (`ado_org_url`) and default project (`ado_project`) instead of inlining empty strings, and references them from the server `env`.
+- `install` command writes `AZURE_DEVOPS_API_VERSION` (default `6.0`), overridable via the new `--api-version` flag. The PAT prompt description now notes `(TFS)`, `--org-url` / `--project` become prompt defaults, and existing inputs are preserved on re-run.
+
 ## [1.2.1] - 2026-06-10
 
 ### Changed
 
-- Published to npm as `@altera/mcp-server-azure-devops-onprem`; run with `npx -y @altera/mcp-server-azure-devops-onprem` (no clone needed).
+- Published to npm as `mcp-server-azure-devops-onprem`; run with `npx -y mcp-server-azure-devops-onprem` (no clone needed).
 - Cross-platform packaging (`prepack`/`prepublishOnly` build without Unix-only `chmod`); `bin` resolves by the published package name.
 
 ## [1.2.0] - 2026-06-10
