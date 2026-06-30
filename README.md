@@ -52,7 +52,7 @@ The server uses a feature-based architecture where each feature area (like work-
 The server is published to npm, so you can run it without cloning this repository:
 
 ```bash
-npx -y @altera/mcp-server-azure-devops-onprem
+npx -y mcp-server-azure-devops-onprem
 ```
 
 ### Running locally (from source)
@@ -112,17 +112,17 @@ Then point an HTTP-capable MCP client at `http://127.0.0.1:3000/mcp` (Streamable
 
 ### Quick install (writes `mcp.json` for you)
 
-Instead of editing `mcp.json` by hand, let the package register itself. This adds an `azureDevOps` server entry **and** a secure `inputs` prompt for your PAT:
+Instead of editing `mcp.json` by hand, let the package register itself. This adds an `azureDevOps` server entry **and** secure `inputs` prompts for your PAT, organization URL, and default project:
 
 ```bash
 # VS Code user config (default location for your OS)
-npx -y @altera/mcp-server-azure-devops-onprem install
+npx -y mcp-server-azure-devops-onprem install
 
 # or write into the current workspace (.vscode/mcp.json)
-npx -y @altera/mcp-server-azure-devops-onprem install --workspace
+npx -y mcp-server-azure-devops-onprem install --workspace
 
-# pre-fill org URL and default project
-npx -y @altera/mcp-server-azure-devops-onprem install --org-url https://dev.azure.com/your-org --project your-project
+# default the org URL / project prompts (you can still change them when prompted)
+npx -y mcp-server-azure-devops-onprem install --org-url https://dev.azure.com/your-org --project your-project
 ```
 
 Options:
@@ -132,23 +132,25 @@ Options:
 | `--path <file>` | Explicit path to the `mcp.json` to update. |
 | `--workspace` | Write to `./.vscode/mcp.json` in the current directory. |
 | `--server-name <id>` | Server key to use (default `azureDevOps`). |
-| `--org-url <url>` | Pre-fill `AZURE_DEVOPS_ORG_URL`. |
-| `--project <name>` | Pre-fill `AZURE_DEVOPS_DEFAULT_PROJECT`. |
+| `--org-url <url>` | Default value for the `ado_org_url` prompt. |
+| `--project <name>` | Default value for the `ado_project` prompt. |
+| `--api-version <ver>` | `AZURE_DEVOPS_API_VERSION` to write (default `6.0`). |
 
-The command is non-destructive: an existing config is backed up to `<mcp.json>.bak` before it is updated, and the PAT input is only added if it is not already present. After running it, fill in `AZURE_DEVOPS_ORG_URL` and restart your MCP client. The resulting entry looks like:
+The command is non-destructive: an existing config is backed up to `<mcp.json>.bak` before it is updated, and each input prompt is only added if it is not already present. When you start the MCP server, VS Code prompts you for the PAT, organization URL, and project. The resulting entry looks like:
 
 ```json
 {
   "servers": {
     "azureDevOps": {
       "command": "npx",
-      "args": ["-y", "@altera/mcp-server-azure-devops-onprem"],
+      "args": ["-y", "mcp-server-azure-devops-onprem"],
       "env": {
         "MCP_TRANSPORT": "stdio",
-        "AZURE_DEVOPS_ORG_URL": "",
+        "AZURE_DEVOPS_ORG_URL": "${input:ado_org_url}",
         "AZURE_DEVOPS_AUTH_METHOD": "pat",
         "AZURE_DEVOPS_PAT": "${input:ado_pat}",
-        "AZURE_DEVOPS_DEFAULT_PROJECT": "",
+        "AZURE_DEVOPS_DEFAULT_PROJECT": "${input:ado_project}",
+        "AZURE_DEVOPS_API_VERSION": "6.0",
         "NODE_TLS_REJECT_UNAUTHORIZED": "0"
       },
       "type": "stdio"
@@ -158,8 +160,18 @@ The command is non-destructive: an existing config is backed up to `<mcp.json>.b
     {
       "id": "ado_pat",
       "type": "promptString",
-      "description": "Azure DevOps Personal Access Token",
+      "description": "Azure DevOps Personal Access Token (TFS)",
       "password": true
+    },
+    {
+      "id": "ado_org_url",
+      "type": "promptString",
+      "description": "Azure DevOps Organization URL"
+    },
+    {
+      "id": "ado_project",
+      "type": "promptString",
+      "description": "Azure DevOps Default Project"
     }
   ]
 }
@@ -177,7 +189,7 @@ In VS Code you can confirm/adjust this per tool from the tool's approval menu; t
 
 ### Automatic updates
 
-On startup the server checks the npm registry for a newer published version. If one exists it logs a notice and, by default, starts a best-effort background self-update (`npm install -g @altera/mcp-server-azure-devops-onprem@latest`) that takes effect on the next launch. When launched via `npx -y …`, npx also fetches the latest version on each run. Control this with:
+On startup the server checks the npm registry for a newer published version. If one exists it logs a notice and, by default, starts a best-effort background self-update (`npm install -g mcp-server-azure-devops-onprem@latest`) that takes effect on the next launch. When launched via `npx -y …`, npx also fetches the latest version on each run. Control this with:
 
 | Variable | Default | Description |
 | -------- | ------- | ----------- |
@@ -199,7 +211,7 @@ Be sure you are logged in to Azure CLI with `az login` then add the following:
   "mcpServers": {
     "azureDevOps": {
       "command": "npx",
-      "args": ["-y", "@altera/mcp-server-azure-devops-onprem"],
+      "args": ["-y", "mcp-server-azure-devops-onprem"],
       "env": {
         "MCP_TRANSPORT": "stdio",
         "AZURE_DEVOPS_ORG_URL": "https://dev.azure.com/your-organization",
@@ -218,7 +230,7 @@ Be sure you are logged in to Azure CLI with `az login` then add the following:
   "mcpServers": {
     "azureDevOps": {
       "command": "npx",
-      "args": ["-y", "@altera/mcp-server-azure-devops-onprem"],
+      "args": ["-y", "mcp-server-azure-devops-onprem"],
       "env": {
         "MCP_TRANSPORT": "stdio",
         "AZURE_DEVOPS_ORG_URL": "https://dev.azure.com/your-organization",
@@ -238,7 +250,7 @@ Azure DevOps Server (on-prem) requires PAT authentication. Example:
   "mcpServers": {
     "azureDevOps": {
       "command": "npx",
-      "args": ["-y", "@altera/mcp-server-azure-devops-onprem"],
+      "args": ["-y", "mcp-server-azure-devops-onprem"],
       "env": {
         "MCP_TRANSPORT": "stdio",
         "AZURE_DEVOPS_ORG_URL": "https://server:8080/tfs/DefaultCollection",

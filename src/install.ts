@@ -1,17 +1,19 @@
 /**
  * `install` command: write or update an MCP client configuration file
  * (mcp.json) so the Azure DevOps server is registered with sensible defaults,
- * including the `inputs` prompt used to securely collect the PAT.
+ * including the `inputs` prompts used to securely collect the PAT and to ask
+ * for the organization URL and default project at first run.
  *
  * Usage:
- *   npx -y @altera/mcp-server-azure-devops-onprem install [options]
+ *   npx -y mcp-server-azure-devops-onprem install [options]
  *
  * Options:
  *   --path <file>        Explicit path to the mcp.json to update.
  *   --workspace          Write to ./.vscode/mcp.json in the current directory.
  *   --server-name <id>   Server key to use (default: azureDevOps).
- *   --org-url <url>      Pre-fill AZURE_DEVOPS_ORG_URL.
- *   --project <name>     Pre-fill AZURE_DEVOPS_DEFAULT_PROJECT.
+ *   --org-url <url>      Default value for the AZURE_DEVOPS_ORG_URL prompt.
+ *   --project <name>     Default value for the AZURE_DEVOPS_DEFAULT_PROJECT prompt.
+ *   --api-version <ver>  AZURE_DEVOPS_API_VERSION to write (default: 6.0).
  */
 import {
   existsSync,
@@ -24,7 +26,11 @@ import { dirname, join } from 'path';
 import { homedir, platform } from 'os';
 import { PACKAGE_NAME } from './shared/version-check';
 
-const INPUT_ID = 'ado_pat';
+const PAT_INPUT_ID = 'ado_pat';
+const ORG_URL_INPUT_ID = 'ado_org_url';
+const PROJECT_INPUT_ID = 'ado_project';
+
+const DEFAULT_API_VERSION = '6.0';
 
 interface InstallOptions {
   path?: string;
@@ -32,6 +38,7 @@ interface InstallOptions {
   serverName: string;
   orgUrl: string;
   project: string;
+  apiVersion: string;
 }
 
 function log(message: string): void {
@@ -75,6 +82,7 @@ function parseArgs(args: string[]): InstallOptions {
     serverName: 'azureDevOps',
     orgUrl: '',
     project: '',
+    apiVersion: DEFAULT_API_VERSION,
   };
 
   for (let i = 0; i < args.length; i++) {
@@ -94,6 +102,9 @@ function parseArgs(args: string[]): InstallOptions {
         break;
       case '--project':
         options.project = args[++i] || '';
+        break;
+      case '--api-version':
+        options.apiVersion = args[++i] || options.apiVersion;
         break;
       default:
         // Ignore unknown args to stay forgiving.
@@ -212,23 +223,51 @@ function buildServerEntry(options: InstallOptions): Record<string, unknown> {
     args: ['-y', PACKAGE_NAME],
     env: {
       MCP_TRANSPORT: 'stdio',
-      AZURE_DEVOPS_ORG_URL: options.orgUrl,
+      AZURE_DEVOPS_ORG_URL: `\${input:${ORG_URL_INPUT_ID}}`,
       AZURE_DEVOPS_AUTH_METHOD: 'pat',
-      AZURE_DEVOPS_PAT: `\${input:${INPUT_ID}}`,
-      AZURE_DEVOPS_DEFAULT_PROJECT: options.project,
+      AZURE_DEVOPS_PAT: `\${input:${PAT_INPUT_ID}}`,
+      AZURE_DEVOPS_DEFAULT_PROJECT: `\${input:${PROJECT_INPUT_ID}}`,
+      AZURE_DEVOPS_API_VERSION: options.apiVersion,
       NODE_TLS_REJECT_UNAUTHORIZED: '0',
     },
     type: 'stdio',
   };
 }
 
-function buildInputEntry(): Record<string, unknown> {
-  return {
-    id: INPUT_ID,
+/**
+ * Build the VS Code `inputs` prompts the server entry references. Any value
+ * supplied via --org-url / --project becomes the prompt's default so the user
+ * can accept it with Enter.
+ */
+function buildInputEntries(
+  options: InstallOptions,
+): Array<Record<string, unknown>> {
+  const patInput: Record<string, unknown> = {
+    id: PAT_INPUT_ID,
     type: 'promptString',
-    description: 'Azure DevOps Personal Access Token',
+    description: 'Azure DevOps Personal Access Token (TFS)',
     password: true,
   };
+
+  const orgUrlInput: Record<string, unknown> = {
+    id: ORG_URL_INPUT_ID,
+    type: 'promptString',
+    description: 'Azure DevOps Organization URL',
+  };
+  if (options.orgUrl) {
+    orgUrlInput.default = options.orgUrl;
+  }
+
+  const projectInput: Record<string, unknown> = {
+    id: PROJECT_INPUT_ID,
+    type: 'promptString',
+    description: 'Azure DevOps Default Project',
+  };
+  if (options.project) {
+    projectInput.default = options.project;
+  }
+
+  return [patInput, orgUrlInput, projectInput];
 }
 
 /**
@@ -280,12 +319,16 @@ export function runInstall(args: string[]): string {
   servers[options.serverName] = buildServerEntry(options);
   config[serversKey] = servers;
 
-  // Ensure the PAT input prompt exists (VS Code `inputs` array).
+  // Ensure the PAT, org URL, and project input prompts exist (VS Code
+  // `inputs` array). Existing prompts are left untouched; only missing ones
+  // are appended, preserving the user's hand edits.
   const inputs = Array.isArray(config.inputs)
     ? (config.inputs as Array<Record<string, unknown>>)
     : [];
-  if (!inputs.some((input) => input.id === INPUT_ID)) {
-    inputs.push(buildInputEntry());
+  for (const entry of buildInputEntries(options)) {
+    if (!inputs.some((input) => input.id === entry.id)) {
+      inputs.push(entry);
+    }
   }
   config.inputs = inputs;
 
